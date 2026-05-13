@@ -26,7 +26,7 @@ const btnSuccess = {
 }
 
 const FORM_VACIO = { codigo: '', nombre: '', categoria: '', categoriaCustom: '', descripcion: '', precio: '' }
-const STOCK_VACIO = { almacen: '', cantidad: '', umbralMinimo: '' }
+const STOCK_VACIO = { almacen: '', almacenCustom: '', cantidad: '', umbralMinimo: '' }
 
 export default function InventarioSection() {
   const [refresh, setRefresh] = useState(0)
@@ -47,8 +47,8 @@ export default function InventarioSection() {
 
   const activos = productos?.filter(p => p.activo) || []
 
-  // Categorías únicas de los productos existentes
   const categorias = [...new Set(productos?.map(p => p.categoria).filter(Boolean) || [])]
+  const almacenes = [...new Set(stock?.map(s => s.almacen).filter(Boolean) || [])]
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -91,14 +91,17 @@ export default function InventarioSection() {
     setStockError(null)
   }
 
+  const almacenFinal = stockForm.almacen === '__nuevo__' ? stockForm.almacenCustom : stockForm.almacen
+
   const handleStockSubmit = async (e, productoId) => {
     e.preventDefault()
+    if (!almacenFinal.trim()) { setStockError('Debes ingresar un almacén'); return }
     setStockSaving(true)
     setStockError(null)
     try {
       await crearStock({
         productoId,
-        almacen: stockForm.almacen,
+        almacen: almacenFinal,
         cantidad: Number(stockForm.cantidad),
         umbralMinimo: Number(stockForm.umbralMinimo)
       })
@@ -257,11 +260,25 @@ export default function InventarioSection() {
                         <form onSubmit={(e) => handleStockSubmit(e, p.id)}>
                           <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-end', flexWrap: 'wrap' }}>
                             <div>
-                              <label style={labelStyle}>Almacén *</label>
-                              <input style={{ ...inputStyle, width: '150px' }} value={stockForm.almacen}
-                                onChange={e => setStockForm(f => ({ ...f, almacen: e.target.value }))}
-                                placeholder="Ej: Principal" required />
+                              <label style={labelStyle}>Local / Almacén *</label>
+                              <select style={{ ...inputStyle, width: '160px' }} value={stockForm.almacen}
+                                onChange={e => setStockForm(f => ({ ...f, almacen: e.target.value, almacenCustom: '' }))}
+                                required={stockForm.almacen !== '__nuevo__'}>
+                                <option value="">-- Selecciona --</option>
+                                {almacenes.map(a => (
+                                  <option key={a} value={a}>{a}</option>
+                                ))}
+                                <option value="__nuevo__">+ Nuevo local...</option>
+                              </select>
                             </div>
+                            {stockForm.almacen === '__nuevo__' && (
+                              <div>
+                                <label style={labelStyle}>Nombre del local *</label>
+                                <input style={{ ...inputStyle, width: '150px' }} value={stockForm.almacenCustom}
+                                  onChange={e => setStockForm(f => ({ ...f, almacenCustom: e.target.value }))}
+                                  placeholder="Ej: Sucursal Norte" required />
+                              </div>
+                            )}
                             <div>
                               <label style={labelStyle}>Cantidad *</label>
                               <input style={{ ...inputStyle, width: '100px' }} type="number" min="0" value={stockForm.cantidad}
