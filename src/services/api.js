@@ -52,6 +52,9 @@ export const crearProducto = (data) => fetchAPI('/api/inventario/productos', {
   method: 'POST', body: JSON.stringify(data)
 })
 export const eliminarProducto = (id) => fetchAPI(`/api/inventario/productos/${id}`, { method: 'DELETE' })
+export const crearStock = (data) => fetchAPI('/api/inventario/stock', {
+  method: 'POST', body: JSON.stringify(data)
+})
 
 // ──────────── FINANCIERO ────────────
 
