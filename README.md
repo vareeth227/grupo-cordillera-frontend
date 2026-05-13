@@ -1,5 +1,7 @@
 # Grupo Cordillera — Frontend
 
+[![CI — Frontend](https://github.com/vareeth227/grupo-cordillera-frontend/actions/workflows/ci.yml/badge.svg)](https://github.com/vareeth227/grupo-cordillera-frontend/actions/workflows/ci.yml)
+
 Dashboard ejecutivo del sistema de monitoreo organizacional Grupo Cordillera.  
 Desarrollado con **React 18 + Vite**. En producción se sirve con **Nginx** vía Docker.
 
@@ -75,9 +77,9 @@ Presiona `Ctrl + C` en la terminal.
 |-------------|---------------------------------------------------------|
 | Ventas      | Puntos de venta activos y últimas transacciones         |
 | Ecommerce   | Pedidos online y seguimiento de estado                  |
-| Inventario  | Catálogo de productos, stock y alertas de reposición    |
+| Inventario  | Catálogo de productos, stock por local y alertas        |
 | Financiero  | KPIs de rentabilidad, ingresos y egresos por período    |
-| Clientes    | CRM: gestión de clientes y tickets de atención          |
+| Clientes    | CRM: gestión de clientes activos/bloqueados y tickets   |
 
 ---
 
@@ -94,3 +96,13 @@ proxy: {
   }
 }
 ```
+
+---
+
+## Pipeline CI/CD
+
+Este repositorio tiene un pipeline de integración continua con **GitHub Actions** que se ejecuta automáticamente en cada `push` a `main`.
+
+El pipeline instala dependencias (`npm ci`) y compila el proyecto (`npm run build`) para verificar que no hay errores. El badge en la parte superior refleja el estado del último build.
+
+Ver historial: [Actions → CI — Frontend](https://github.com/vareeth227/grupo-cordillera-frontend/actions/workflows/ci.yml)
