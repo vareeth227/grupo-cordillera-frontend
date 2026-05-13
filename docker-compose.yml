@@ -1,0 +1,11 @@
+services:
+  frontend-cordillera:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VITE_API_GATEWAY_URL: ${VITE_API_GATEWAY_URL:-http://localhost:9090}
+    container_name: frontend-cordillera
+    ports:
+      - "5173:80"
+    restart: unless-stopped
