@@ -25,7 +25,7 @@ const btnSuccess = {
   border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: 600, marginRight: '4px'
 }
 
-const FORM_VACIO = { codigo: '', nombre: '', categoria: '', categoriaCustom: '', descripcion: '', precio: '' }
+const FORM_VACIO = { codigo: '', nombre: '', categoria: '', categoriaCustom: '', descripcion: '', precio: '', stockAlmacen: '', stockAlmacenCustom: '', stockCantidad: '', stockUmbral: '' }
 const STOCK_VACIO = { almacen: '', almacenCustom: '', cantidad: '', umbralMinimo: '' }
 
 export default function InventarioSection() {
@@ -56,14 +56,25 @@ export default function InventarioSection() {
   }
 
   const categoriaFinal = form.categoria === '__nueva__' ? form.categoriaCustom : form.categoria
+  const stockAlmacenFinal = form.stockAlmacen === '__nuevo__' ? form.stockAlmacenCustom : form.stockAlmacen
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     if (!categoriaFinal.trim()) { setFormError('Debes ingresar una categoría'); return }
+    if (form.stockAlmacen && !stockAlmacenFinal.trim()) { setFormError('Debes ingresar el nombre del local'); return }
     setSaving(true)
     setFormError(null)
     try {
-      await crearProducto({ ...form, categoria: categoriaFinal, precio: Number(form.precio), activo: true })
+      const { codigo, nombre, descripcion, precio } = form
+      const producto = await crearProducto({ codigo, nombre, descripcion, categoria: categoriaFinal, precio: Number(precio), activo: true })
+      if (stockAlmacenFinal.trim() && form.stockCantidad !== '') {
+        await crearStock({
+          productoId: producto.id,
+          almacen: stockAlmacenFinal,
+          cantidad: Number(form.stockCantidad),
+          umbralMinimo: Number(form.stockUmbral || 0)
+        })
+      }
       setForm(FORM_VACIO)
       setShowForm(false)
       setRefresh(r => r + 1)
@@ -169,6 +180,46 @@ export default function InventarioSection() {
                 <input style={inputStyle} name="descripcion" value={form.descripcion} onChange={handleChange} placeholder="Descripción opcional" />
               </div>
             </div>
+
+            {/* Stock inicial */}
+            <div style={{ borderTop: '1px solid #e8ecf0', paddingTop: '14px', marginBottom: '16px' }}>
+              <p style={{ fontSize: '12px', fontWeight: 600, color: '#555', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
+                Asignar Stock Inicial <span style={{ fontWeight: 400, color: '#999', textTransform: 'none' }}>(opcional)</span>
+              </p>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
+                <div style={{ gridColumn: form.stockAlmacen === '__nuevo__' ? '1 / -1' : 'auto' }}>
+                  <label style={labelStyle}>Local / Almacén</label>
+                  <select style={inputStyle} name="stockAlmacen" value={form.stockAlmacen}
+                    onChange={e => setForm(f => ({ ...f, stockAlmacen: e.target.value, stockAlmacenCustom: '' }))}>
+                    <option value="">-- Sin stock inicial --</option>
+                    {almacenes.map(a => <option key={a} value={a}>{a}</option>)}
+                    <option value="__nuevo__">+ Nuevo local...</option>
+                  </select>
+                </div>
+                {form.stockAlmacen === '__nuevo__' && (
+                  <div style={{ gridColumn: '1 / -1' }}>
+                    <label style={labelStyle}>Nombre del local *</label>
+                    <input style={inputStyle} name="stockAlmacenCustom" value={form.stockAlmacenCustom}
+                      onChange={handleChange} placeholder="Ej: Sucursal Norte" required />
+                  </div>
+                )}
+                {form.stockAlmacen && (
+                  <>
+                    <div>
+                      <label style={labelStyle}>Cantidad *</label>
+                      <input style={inputStyle} name="stockCantidad" type="number" min="0"
+                        value={form.stockCantidad} onChange={handleChange} placeholder="0" required />
+                    </div>
+                    <div>
+                      <label style={labelStyle}>Umbral mínimo</label>
+                      <input style={inputStyle} name="stockUmbral" type="number" min="0"
+                        value={form.stockUmbral} onChange={handleChange} placeholder="0" />
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+
             {formError && <div className="error" style={{ marginBottom: '12px' }}>{formError}</div>}
             <div style={{ display: 'flex', gap: '8px' }}>
               <button type="submit" style={btnPrimary} disabled={saving}>
