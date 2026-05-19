@@ -35,6 +35,9 @@ async function fetchAPI(path, options = {}) {
 export const getPuntosDeVenta = () => fetchAPI('/api/ventas/puntos/activos')
 export const getTransacciones = () => fetchAPI('/api/ventas/transacciones')
 export const getReporteDiario = (fecha) => fetchAPI(`/api/ventas/reporte-diario?fecha=${fecha}`)
+export const registrarVenta = (data) => fetchAPI('/api/ventas/transacciones/venta', {
+  method: 'POST', body: JSON.stringify(data)
+})
 
 // ──────────── ECOMMERCE ────────────
 
