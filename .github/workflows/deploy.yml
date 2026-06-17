@@ -1,57 +1,46 @@
-name: Deploy — Frontend
+name: CD — Build y publicar imagen Docker Frontend
 
 on:
-  workflow_run:
-    workflows: ["CI — Frontend"]
-    types: [completed]
-    branches: [main]
+  push:
+    branches: [deploy]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/frontend-cordillera
 
 jobs:
-  build-and-deploy:
-    name: Build y desplegar en EC2 Frontend
+  build-and-push:
+    name: Build y push imagen frontend
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+    permissions:
+      contents: read
+      packages: write
 
     steps:
       - name: Checkout código
         uses: actions/checkout@v4
 
       - name: Login a GitHub Container Registry
-        if: false  # Deshabilitado - no se usa por ahora
         uses: docker/login-action@v3
         with:
-          registry: ghcr.io
+          registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # Deshabilitado temporalmente - error de permisos ghcr.io
-      # Descomentar cuando se configure Docker Hub o token personal
-      # - name: Build y push imagen frontend
-      #   uses: docker/build-push-action@v5
-      #   with:
-      #     context: .
-      #     push: true
-      #     tags: ghcr.io/${{ github.repository_owner }}/cordillera-frontend:latest
-      #     build-args: |
-      #       VITE_API_GATEWAY_URL=
-
-      - name: Desplegar en EC2 via SSH
-        if: false  # Deshabilitado - requiere push a ghcr.io funcional
-        uses: appleboy/ssh-action@v1
+      - name: Build y push imagen
+        uses: docker/build-push-action@v5
         with:
-          host: ${{ secrets.FRONTEND_HOST }}
-          username: ec2-user
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
-            echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-            docker pull ghcr.io/${{ github.repository_owner }}/cordillera-frontend:latest
-            docker stop cordillera-frontend 2>/dev/null || true
-            docker rm cordillera-frontend 2>/dev/null || true
-            docker run -d \
-              --name cordillera-frontend \
-              --restart unless-stopped \
-              -p 80:80 \
-              -e BACKEND_HOST=${{ secrets.BACKEND_PRIVATE_IP }} \
-              ghcr.io/${{ github.repository_owner }}/cordillera-frontend:latest
-            echo "Frontend desplegado:"
-            docker ps --filter name=cordillera-frontend
+          context: .
+          dockerfile: ./Dockerfile
+          push: true
+          build-args: |
+            VITE_API_GATEWAY_URL=http://localhost:9090
+          tags: |
+            ${{ env.IMAGE_NAME }}:latest
+            ${{ env.IMAGE_NAME }}:${{ github.sha }}
+
+      - name: Resumen
+        run: |
+          echo "Imagen publicada: ${{ env.IMAGE_NAME }}:latest"
+          echo "Para usar en PC-B (LAN): VITE_API_GATEWAY_URL=http://<IP-PC-A>:9090"

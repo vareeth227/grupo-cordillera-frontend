@@ -2,13 +2,13 @@ name: CI — Frontend
 
 on:
   push:
-    branches: [main]
+    branches: [main, develop]
   pull_request:
     branches: [main]
 
 jobs:
-  build:
-    name: Build React
+  test-and-build:
+    name: Test y Build React
     runs-on: ubuntu-latest
 
     steps:
@@ -23,6 +23,16 @@ jobs:
 
       - name: Instalar dependencias
         run: npm ci
+
+      - name: Ejecutar tests con cobertura
+        run: npm run test:coverage
+
+      - name: Subir reporte de cobertura
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-frontend
+          path: coverage/
 
       - name: Compilar proyecto
         run: npm run build
