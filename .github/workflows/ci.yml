@@ -2,9 +2,9 @@ name: CI — Frontend Tests & Build
 
 on:
   push:
-    branches: [main]
+    branches: [deploy]
   pull_request:
-    branches: [main]
+    branches: [main, deploy]
 
 jobs:
   test:
