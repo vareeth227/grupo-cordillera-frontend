@@ -7,7 +7,7 @@ import { useState, useEffect } from 'react'
  * @param {Function} fetchFn - Función que retorna una promesa (de services/api.js)
  * @param {Array} deps - Dependencias para volver a ejecutar la petición
  */
-export function useFetch(fetchFn, deps = []) {
+export function useFetch(fetchFn, deps = [], fallback = undefined) {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -26,12 +26,15 @@ export function useFetch(fetchFn, deps = []) {
       })
       .catch(err => {
         if (!cancelled) {
-          setError(err.message)
+          if (fallback !== undefined) {
+            setData(fallback)
+          } else {
+            setError(err.message)
+          }
           setLoading(false)
         }
       })
 
-    // Limpieza: evita actualizar estado en componentes desmontados
     return () => { cancelled = true }
   }, deps)
 

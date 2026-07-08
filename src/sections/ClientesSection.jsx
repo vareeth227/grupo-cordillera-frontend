@@ -2,6 +2,9 @@ import { useState } from 'react'
 import { useFetch } from '../hooks/useFetch'
 import { getTodosClientes, getTickets, desactivarCliente, eliminarCliente } from '../services/api'
 import KpiCard from '../components/KpiCard'
+import { SkeletonKpis, SkeletonTable } from '../components/Skeleton'
+import { useToast } from '../components/Toast'
+import { DEMO_CLIENTES, DEMO_TICKETS } from '../services/demo'
 
 const btnWarning = {
   background: '#a0680a', color: '#fff', padding: '4px 10px',
@@ -13,9 +16,10 @@ const btnDanger = {
 }
 
 export default function ClientesSection() {
+  const showToast = useToast()
   const [refresh, setRefresh] = useState(0)
-  const { data: clientes, loading: lCli, error: eCli } = useFetch(getTodosClientes, [refresh])
-  const { data: tickets, loading: lTick, error: eTick } = useFetch(getTickets, [refresh])
+  const { data: clientes, loading: lCli, error: eCli } = useFetch(getTodosClientes, [refresh], DEMO_CLIENTES)
+  const { data: tickets, loading: lTick, error: eTick } = useFetch(getTickets, [refresh], DEMO_TICKETS)
 
   const contarTickets = (estado) => tickets?.filter(t => t.estado === estado).length || 0
   const clientesActivos = clientes?.filter(c => c.activo) || []
@@ -30,8 +34,9 @@ export default function ClientesSection() {
     try {
       await desactivarCliente(id)
       setRefresh(r => r + 1)
+      showToast(`Cliente "${nombre}" bloqueado`)
     } catch (err) {
-      alert('Error al bloquear: ' + err.message)
+      showToast(err.message || 'Error al bloquear', 'error')
     }
   }
 
@@ -40,29 +45,30 @@ export default function ClientesSection() {
     try {
       await eliminarCliente(id)
       setRefresh(r => r + 1)
+      showToast(`Cliente "${nombre}" eliminado`, 'error')
     } catch (err) {
-      alert('Error al eliminar: ' + err.message)
+      showToast(err.message || 'Error al eliminar', 'error')
     }
   }
 
   return (
     <div>
-      <h2 style={{ marginBottom: '20px', fontSize: '16px', fontWeight: 600, color: '#1a3a6e', textTransform: 'uppercase', letterSpacing: '0.6px', paddingBottom: '10px', borderBottom: '2px solid #e8ecf0' }}>Clientes</h2>
+      <h2 style={{ marginBottom: '20px', fontSize: '16px', fontWeight: 600, color: '#3c1060', textTransform: 'uppercase', letterSpacing: '0.6px', paddingBottom: '10px', borderBottom: '2px solid rgba(120, 60, 180, 0.18)' }}>Clientes</h2>
 
       {/* KPIs */}
       {!lCli && !lTick && (
         <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', marginBottom: '24px' }}>
-          <KpiCard titulo="Clientes Activos" valor={clientesActivos.length} color="#1a56db" />
-          <KpiCard titulo="Tickets Abiertos" valor={contarTickets('ABIERTO')} color="#c0392b" />
-          <KpiCard titulo="En Proceso" valor={contarTickets('EN_PROCESO')} color="#a0680a" />
-          <KpiCard titulo="Resueltos" valor={contarTickets('RESUELTO')} color="#1a7a3e" />
+          <KpiCard titulo="Clientes Activos" valor={clientesActivos.length} color="#8a30b0" sparkline={[85,90,88,95,92,98,105]} />
+          <KpiCard titulo="Tickets Abiertos" valor={contarTickets('ABIERTO')} color="#c0392b" sparkline={[12,8,15,10,14,9,11]} />
+          <KpiCard titulo="En Proceso" valor={contarTickets('EN_PROCESO')} color="#a0680a" sparkline={[6,9,7,8,6,8,7]} />
+          <KpiCard titulo="Resueltos" valor={contarTickets('RESUELTO')} color="#1a7a3e" sparkline={[20,25,22,28,30,32,35]} />
         </div>
       )}
 
       {/* Tabla de clientes */}
       <div className="card">
         <h3 style={{ marginBottom: '16px' }}>Clientes Registrados</h3>
-        {lCli ? <div className="loading">Cargando clientes...</div>
+        {lCli ? <SkeletonTable rows={5} cols={5} />
           : eCli ? <div className="error">{eCli}</div>
           : !clientes?.length ? <div className="empty">No hay clientes registrados</div>
           : (
@@ -103,7 +109,7 @@ export default function ClientesSection() {
       {/* Tabla de tickets */}
       <div className="card">
         <h3 style={{ marginBottom: '16px' }}>Tickets de Atención</h3>
-        {lTick ? <div className="loading">Cargando tickets...</div>
+        {lTick ? <SkeletonTable rows={4} cols={4} />
           : eTick ? <div className="error">{eTick}</div>
           : !tickets?.length ? <div className="empty">No hay tickets registrados</div>
           : (

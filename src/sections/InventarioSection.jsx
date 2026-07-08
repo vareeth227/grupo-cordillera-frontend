@@ -2,6 +2,9 @@ import { useState } from 'react'
 import { useFetch } from '../hooks/useFetch'
 import { getTodosProductos, getAlertas, getStock, crearProducto, eliminarProducto, crearStock } from '../services/api'
 import KpiCard from '../components/KpiCard'
+import { SkeletonKpis, SkeletonTable } from '../components/Skeleton'
+import { useToast } from '../components/Toast'
+import { DEMO_PRODUCTOS, DEMO_ALERTAS, DEMO_STOCK } from '../services/demo'
 
 const inputStyle = {
   width: '100%', padding: '8px 10px', border: '1px solid #d0d5de',
@@ -9,7 +12,7 @@ const inputStyle = {
 }
 const labelStyle = { display: 'block', marginBottom: '4px', fontSize: '12px', fontWeight: 600, color: '#555' }
 const btnPrimary = {
-  background: '#1a56db', color: '#fff', padding: '8px 20px',
+  background: '#8a30b0', color: '#fff', padding: '8px 20px',
   border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '13px', fontWeight: 600
 }
 const btnSecondary = {
@@ -41,9 +44,11 @@ export default function InventarioSection() {
   const [stockSaving, setStockSaving] = useState(false)
   const [stockError, setStockError] = useState(null)
 
-  const { data: productos, loading: lProd, error: eProd } = useFetch(getTodosProductos, [refresh])
-  const { data: alertas, loading: lAlert, error: eAlert } = useFetch(getAlertas, [refresh])
-  const { data: stock, loading: lStock } = useFetch(getStock, [refresh])
+  const showToast = useToast()
+
+  const { data: productos, loading: lProd, error: eProd } = useFetch(getTodosProductos, [refresh], DEMO_PRODUCTOS)
+  const { data: alertas, loading: lAlert, error: eAlert } = useFetch(getAlertas, [refresh], DEMO_ALERTAS)
+  const { data: stock, loading: lStock } = useFetch(getStock, [refresh], DEMO_STOCK)
 
   const activos = productos?.filter(p => p.activo) || []
 
@@ -78,8 +83,10 @@ export default function InventarioSection() {
       setForm(FORM_VACIO)
       setShowForm(false)
       setRefresh(r => r + 1)
+      showToast('Producto creado correctamente')
     } catch (err) {
       setFormError(err.message)
+      showToast(err.message || 'Error al crear el producto', 'error')
     } finally {
       setSaving(false)
     }
@@ -91,8 +98,9 @@ export default function InventarioSection() {
       await eliminarProducto(id)
       if (stockProductoId === id) setStockProductoId(null)
       setRefresh(r => r + 1)
+      showToast(`Producto "${nombre}" eliminado`)
     } catch (err) {
-      alert('Error al eliminar: ' + err.message)
+      showToast(err.message || 'Error al eliminar', 'error')
     }
   }
 
@@ -119,8 +127,10 @@ export default function InventarioSection() {
       setStockProductoId(null)
       setStockForm(STOCK_VACIO)
       setRefresh(r => r + 1)
+      showToast('Stock registrado correctamente')
     } catch (err) {
       setStockError(err.message)
+      showToast(err.message || 'Error al registrar stock', 'error')
     } finally {
       setStockSaving(false)
     }
@@ -128,8 +138,8 @@ export default function InventarioSection() {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', paddingBottom: '10px', borderBottom: '2px solid #e8ecf0' }}>
-        <h2 style={{ fontSize: '16px', fontWeight: 600, color: '#1a3a6e', textTransform: 'uppercase', letterSpacing: '0.6px', margin: 0 }}>Inventario</h2>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', paddingBottom: '10px', borderBottom: '2px solid rgba(120, 60, 180, 0.18)' }}>
+        <h2 style={{ fontSize: '16px', fontWeight: 600, color: '#3c1060', textTransform: 'uppercase', letterSpacing: '0.6px', margin: 0 }}>Inventario</h2>
         <button style={btnPrimary} onClick={() => { setShowForm(!showForm); setFormError(null) }}>
           {showForm ? 'Cancelar' : '+ Nuevo Producto'}
         </button>
@@ -137,8 +147,8 @@ export default function InventarioSection() {
 
       {/* Formulario de nuevo producto */}
       {showForm && (
-        <div className="card" style={{ marginBottom: '24px', borderLeft: '4px solid #1a56db' }}>
-          <h3 style={{ marginBottom: '16px', fontSize: '14px', color: '#1a56db', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Registrar Nuevo Producto</h3>
+        <div className="card" style={{ marginBottom: '24px', borderLeft: '4px solid #8a30b0' }}>
+          <h3 style={{ marginBottom: '16px', fontSize: '14px', color: '#8a30b0', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Registrar Nuevo Producto</h3>
           <form onSubmit={handleSubmit}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
               <div>
@@ -236,9 +246,9 @@ export default function InventarioSection() {
       {/* KPIs */}
       {!lProd && !lAlert && (
         <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', marginBottom: '24px' }}>
-          <KpiCard titulo="Productos Activos" valor={activos.length} color="#1a7a3e" />
-          <KpiCard titulo="Alertas Bajo Stock" valor={alertas?.length || 0} color="#c0392b" subtitulo="requieren reposición" />
-          <KpiCard titulo="Registros de Stock" valor={stock?.length || 0} color="#1a56db" />
+          <KpiCard titulo="Productos Activos" valor={activos.length} color="#1a7a3e" sparkline={[120,118,125,122,130,128,135]} />
+          <KpiCard titulo="Alertas Bajo Stock" valor={alertas?.length || 0} color="#c0392b" subtitulo="requieren reposición" sparkline={[8,12,10,15,11,9,7]} />
+          <KpiCard titulo="Registros de Stock" valor={stock?.length || 0} color="#8a30b0" sparkline={[210,218,215,225,230,228,240]} />
         </div>
       )}
 
@@ -246,7 +256,7 @@ export default function InventarioSection() {
       {alertas?.length > 0 && (
         <div className="card" style={{ borderLeft: '4px solid #c0392b' }}>
           <h3 style={{ marginBottom: '16px', color: '#c0392b', fontSize: '14px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Alertas de Stock Bajo</h3>
-          {lAlert ? <div className="loading">Cargando...</div>
+          {lAlert ? <SkeletonTable rows={3} cols={4} />
             : eAlert ? <div className="error">{eAlert}</div>
             : (
             <table>
@@ -273,7 +283,7 @@ export default function InventarioSection() {
       {/* Catálogo */}
       <div className="card">
         <h3 style={{ marginBottom: '16px' }}>Catálogo de Productos</h3>
-        {lProd ? <div className="loading">Cargando...</div>
+        {lProd ? <SkeletonTable rows={6} cols={5} />
           : eProd ? <div className="error">{eProd}</div>
           : !productos?.length ? <div className="empty">No hay productos registrados</div>
           : (

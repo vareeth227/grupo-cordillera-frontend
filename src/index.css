@@ -1,4 +1,4 @@
-/* Estilos globales del dashboard Grupo Cordillera */
+/* Estilos globales del dashboard Grupo Cordillera — Claymorphism */
 * {
   margin: 0;
   padding: 0;
@@ -7,17 +7,31 @@
 
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: #f0f2f5;
-  color: #333;
+  background: linear-gradient(135deg, #f4eaf8 0%, #f8eef8 50%, #f0e8f5 100%);
+  background-attachment: fixed;
+  color: #3a2d48;
+  min-height: 100vh;
 }
 
-/* Tarjetas de contenido */
+/* Tarjetas de contenido — estilo clay */
 .card {
-  background: white;
-  border-radius: 8px;
-  padding: 20px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  background: rgba(255, 255, 255, 0.88);
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow:
+    6px 8px 24px rgba(110, 50, 160, 0.14),
+    -3px -3px 10px rgba(255, 255, 255, 0.92),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.65);
   margin-bottom: 20px;
+  transition: box-shadow 0.25s ease, transform 0.25s ease;
+}
+
+.card:hover {
+  box-shadow:
+    10px 14px 32px rgba(110, 50, 160, 0.18),
+    -3px -3px 12px rgba(255, 255, 255, 1),
+    inset 0 1px 0 rgba(255, 255, 255, 1);
 }
 
 /* Tablas de datos */
@@ -27,51 +41,88 @@ table {
 }
 
 th, td {
-  padding: 10px 14px;
+  padding: 12px 16px;
   text-align: left;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid rgba(200, 205, 225, 0.45);
 }
 
 th {
-  background-color: #f8f9fa;
-  font-weight: 600;
-  color: #555;
+  background: rgba(230, 220, 248, 0.55);
+  font-weight: 700;
+  color: #6a5080;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
 }
 
-tr:hover {
-  background-color: #f8f9fa;
+tr:hover td {
+  background: rgba(220, 200, 248, 0.35);
 }
 
 /* Badges de estado */
 .badge {
   display: inline-block;
-  padding: 3px 10px;
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
 }
 
-.badge-success { background: #e6f9ee; color: #1a7a3e; }
-.badge-warning { background: #fff8e1; color: #a0680a; }
-.badge-danger  { background: #fdecea; color: #c0392b; }
-.badge-info    { background: #e3f2fd; color: #1565c0; }
+.badge-success { background: #d4ede1; color: #1a6840; }
+.badge-warning { background: #fdefd3; color: #8a5800; }
+.badge-danger  { background: #fde0dc; color: #b83028; }
+.badge-info    { background: #d8e8fc; color: #1548a0; }
 
-/* Botones */
+/* Botones — estilo clay */
 button {
   cursor: pointer;
   border: none;
-  border-radius: 6px;
-  padding: 8px 16px;
-  font-size: 14px;
-  transition: opacity 0.2s;
+  border-radius: 12px;
+  padding: 9px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
 }
 
-button:hover { opacity: 0.85; }
+button:hover  { transform: translateY(-2px); }
+button:active { transform: translateY(0px); }
 
-.btn-primary { background: #1a56db; color: white; }
-.btn-secondary { background: #6c757d; color: white; }
+.btn-primary {
+  background: linear-gradient(135deg, #8a30b0 0%, #6a1890 100%);
+  color: white;
+  box-shadow: 4px 5px 14px rgba(138, 48, 176, 0.38), -1px -1px 4px rgba(255,255,255,0.5);
+}
+.btn-primary:hover {
+  box-shadow: 6px 8px 20px rgba(138, 48, 176, 0.48), -1px -1px 6px rgba(255,255,255,0.7);
+}
+
+.btn-secondary {
+  background: linear-gradient(135deg, #f5f0fa 0%, #ebe4f5 100%);
+  color: #5a4070;
+  box-shadow: 4px 5px 14px rgba(110, 50, 160, 0.15), -1px -1px 4px rgba(255,255,255,0.92);
+}
+.btn-secondary:hover {
+  box-shadow: 6px 8px 20px rgba(110, 50, 160, 0.22), -1px -1px 6px rgba(255,255,255,1);
+}
 
 /* Mensajes de estado */
-.loading { text-align: center; padding: 40px; color: #888; }
-.error   { color: #c0392b; background: #fdecea; padding: 12px; border-radius: 6px; }
-.empty   { text-align: center; padding: 40px; color: #888; }
+.loading { text-align: center; padding: 40px; color: #8890b0; }
+.error   { color: #b83028; background: rgba(253, 224, 220, 0.85); padding: 14px 18px; border-radius: 14px; font-size: 13px; }
+.empty   { text-align: center; padding: 40px; color: #8890b0; }
+
+/* Animaciones */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translateX(20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
